@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { Search, ShoppingBag, User, Menu, X, LogIn } from 'lucide-react'
+import { Search, ShoppingBag, User, Menu, X, LogIn, Zap } from 'lucide-react'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import CartDrawer from '@/components/cart/cart-drawer'
@@ -25,14 +25,12 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Focus close button when mobile menu opens
   useEffect(() => {
     if (isMobileMenuOpen) {
       mobileMenuCloseRef.current?.focus()
     }
   }, [isMobileMenuOpen])
 
-  // Close mobile menu on Escape
   useEffect(() => {
     if (!isMobileMenuOpen) return
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -42,7 +40,6 @@ export default function Header() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isMobileMenuOpen])
 
-  // Focus trap for mobile menu
   const handleMobileMenuKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key !== 'Tab' || !mobileMenuRef.current) return
     const focusable = mobileMenuRef.current.querySelectorAll<HTMLElement>(
@@ -65,8 +62,8 @@ export default function Header() {
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-background/95 backdrop-blur-md border-b shadow-sm'
-            : 'bg-background border-b'
+            ? 'bg-[hsl(215_40%_12%/0.97)] backdrop-blur-md border-b border-white/10 shadow-lg'
+            : 'bg-[hsl(215_40%_12%)] border-b border-white/10'
         }`}
       >
         <div className="container-custom">
@@ -74,60 +71,66 @@ export default function Header() {
             {/* Mobile menu toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 -ml-2 lg:hidden hover:opacity-70 transition-opacity"
+              className="p-2 -ml-2 lg:hidden hover:opacity-70 transition-opacity text-white"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <span className="font-heading text-2xl font-semibold tracking-tight">
-                Store
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center justify-center w-8 h-8 rounded-sm bg-[hsl(38_95%_52%)]">
+                <Zap className="h-5 w-5 text-[hsl(215_40%_10%)] fill-current" />
+              </div>
+              <span className="font-heading text-xl font-bold tracking-tight text-white">
+                SolarVolt
               </span>
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
-              <Link href="/products" className="text-sm tracking-wide uppercase link-underline py-1" prefetch={true}>
+              <Link href="/products" className="text-sm tracking-wide text-white/80 hover:text-white transition-colors uppercase" prefetch={true}>
                 Shop All
               </Link>
-              {collections?.slice(0, 4).map((collection: any) => (
+              {collections?.slice(0, 4).map((collection: { id: string; handle: string; title: string }) => (
                 <Link
                   key={collection.id}
                   href={`/collections/${collection.handle}`}
-                  className="text-sm tracking-wide uppercase link-underline py-1"
+                  className="text-sm tracking-wide uppercase text-white/80 hover:text-white transition-colors"
                   prefetch={true}
                 >
                   {collection.title}
                 </Link>
               ))}
+              <Link href="/about" className="text-sm tracking-wide uppercase text-white/80 hover:text-white transition-colors" prefetch={true}>
+                About
+              </Link>
             </nav>
 
             {/* Actions */}
             <div className="flex items-center gap-1">
               <Link
                 href="/search"
-                className="p-2.5 hover:opacity-70 transition-opacity"
+                className="p-2.5 text-white/80 hover:text-white transition-colors"
                 aria-label="Search"
               >
                 <Search className="h-5 w-5" />
               </Link>
               <Link
                 href={isLoggedIn ? '/account' : '/auth/login'}
-                className="p-2.5 hover:opacity-70 transition-opacity hidden sm:block"
+                className="p-2.5 text-white/80 hover:text-white transition-colors hidden sm:block"
                 aria-label={isLoggedIn ? 'Account' : 'Sign in'}
               >
                 {isLoggedIn ? <User className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
               </Link>
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2.5 hover:opacity-70 transition-opacity"
+                className="relative p-2.5 text-white/80 hover:text-white transition-colors"
                 aria-label="Shopping bag"
               >
                 <ShoppingBag className="h-5 w-5" />
                 {itemCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] font-bold text-background">
+                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[hsl(38_95%_52%)] text-[10px] font-bold text-[hsl(215_40%_10%)]">
                     {itemCount}
                   </span>
                 )}
@@ -141,7 +144,7 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/60"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           <div
@@ -150,14 +153,19 @@ export default function Header() {
             aria-modal="true"
             aria-label="Navigation menu"
             onKeyDown={handleMobileMenuKeyDown}
-            className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-background animate-slide-in-right"
+            className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-[hsl(215_40%_12%)] animate-slide-in-right"
           >
-            <div className="flex items-center justify-between p-4 border-b">
-              <span className="font-heading text-xl font-semibold">Menu</span>
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-sm bg-[hsl(38_95%_52%)]">
+                  <Zap className="h-4 w-4 text-[hsl(215_40%_10%)] fill-current" />
+                </div>
+                <span className="font-heading text-lg font-bold text-white">SolarVolt</span>
+              </div>
               <button
                 ref={mobileMenuCloseRef}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 hover:opacity-70"
+                className="p-2 text-white/70 hover:text-white"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" />
@@ -167,34 +175,42 @@ export default function Header() {
               <Link
                 href="/products"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-3 text-lg tracking-wide border-b border-border/50"
+                className="block py-3 text-lg text-white tracking-wide border-b border-white/10"
                 prefetch={true}
               >
                 Shop All
               </Link>
-              {collections?.map((collection: any) => (
+              {collections?.map((collection: { id: string; handle: string; title: string }) => (
                 <Link
                   key={collection.id}
                   href={`/collections/${collection.handle}`}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-lg tracking-wide border-b border-border/50"
+                  className="block py-3 text-lg text-white tracking-wide border-b border-white/10"
                   prefetch={true}
                 >
                   {collection.title}
                 </Link>
               ))}
+              <Link
+                href="/about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-3 text-lg text-white tracking-wide border-b border-white/10"
+                prefetch={true}
+              >
+                About
+              </Link>
               <div className="pt-4 space-y-1">
                 <Link
                   href={isLoggedIn ? '/account' : '/auth/login'}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-muted-foreground"
+                  className="block py-3 text-white/60"
                 >
                   {isLoggedIn ? 'Account' : 'Sign In'}
                 </Link>
                 <Link
                   href="/search"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-3 text-muted-foreground"
+                  className="block py-3 text-white/60"
                 >
                   Search
                 </Link>

@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-export const revalidate = 3600 // ISR: revalidate every hour
+export const revalidate = 3600
 import { medusaServerClient } from '@/lib/medusa-client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Truck, RotateCcw, Shield, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import ProductActions from '@/components/product/product-actions'
 import ProductAccordion from '@/components/product/product-accordion'
+import ProductBundleOffer from '@/components/product/product-bundle-offer'
+import ProductUrgency from '@/components/product/product-urgency'
+import ProductTrustBadges from '@/components/product/product-trust-badges'
 import { ProductViewTracker } from '@/components/product/product-view-tracker'
 import { getProductPlaceholder } from '@/lib/utils/placeholder-images'
 import { type VariantExtension } from '@/components/product/product-price'
@@ -99,18 +102,35 @@ export default async function ProductPage({
 
   const allImages = [
     ...(product.thumbnail ? [{ url: product.thumbnail }] : []),
-    ...(product.images || []).filter((img: any) => img.url !== product.thumbnail),
+    ...(product.images || []).filter((img: { url: string }) => img.url !== product.thumbnail),
   ]
 
-  // Use placeholder if no images
   const displayImages = allImages.length > 0
     ? allImages
     : [{ url: getProductPlaceholder(product.id) }]
 
+  // Get first variant info for bundle offer
+  const firstVariant = product.variants?.[0]
+  const firstVariantId = firstVariant?.id || ''
+  const firstVariantTitle = firstVariant?.title || 'Default'
+  const cp = firstVariant?.calculated_price
+  const firstVariantPrice =
+    cp && typeof cp === 'object' && 'calculated_amount' in cp
+      ? (cp.calculated_amount as number) ?? 0
+      : 0
+  const currency =
+    cp && typeof cp === 'object' && 'currency_code' in cp
+      ? (cp.currency_code as string) ?? 'zar'
+      : 'zar'
+
+  // Get inventory for urgency widget
+  const firstExt = firstVariantId ? variantExtensions[firstVariantId] : null
+  const stockQty = firstExt?.inventory_quantity ?? undefined
+
   return (
     <>
       {/* Breadcrumbs */}
-      <div className="border-b">
+      <div className="border-b bg-[hsl(210_20%_98%)]">
         <div className="container-custom py-3">
           <nav className="flex items-center gap-2 text-xs text-muted-foreground">
             <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
@@ -124,9 +144,9 @@ export default async function ProductPage({
 
       <div className="container-custom py-8 lg:py-12">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
-          {/* Product Images */}
+          {/* ── Product Images ── */}
           <div className="space-y-3">
-            <div className="relative aspect-[3/4] overflow-hidden bg-muted rounded-sm">
+            <div className="relative aspect-[4/3] lg:aspect-[3/4] overflow-hidden bg-muted rounded-sm">
               <Image
                 src={displayImages[0].url}
                 alt={product.title}
@@ -139,7 +159,7 @@ export default async function ProductPage({
 
             {displayImages.length > 1 && (
               <div className="grid grid-cols-4 gap-3">
-                {displayImages.slice(1, 5).map((image: any, idx: number) => (
+                {displayImages.slice(1, 5).map((image: { url: string }, idx: number) => (
                   <div
                     key={idx}
                     className="relative aspect-[3/4] overflow-hidden bg-muted rounded-sm"
@@ -157,46 +177,49 @@ export default async function ProductPage({
             )}
           </div>
 
-          {/* Product Info */}
-          <div className="lg:sticky lg:top-24 lg:self-start space-y-6">
-            {/* Title & Subtitle */}
+          {/* ── Product Info ── */}
+          <div className="lg:sticky lg:top-24 lg:self-start space-y-5">
+            {/* Title */}
             <div>
               {product.subtitle && (
-                <p className="text-sm uppercase tracking-[0.15em] text-muted-foreground mb-2">
+                <p className="text-xs uppercase tracking-[0.15em] text-[hsl(38_95%_52%)] font-semibold mb-2">
                   {product.subtitle}
                 </p>
               )}
-              <h1 className="text-h2 font-heading font-semibold">{product.title}</h1>
+              <h1 className="text-3xl font-heading font-bold text-[hsl(215_40%_12%)]">
+                {product.title}
+              </h1>
             </div>
 
             <ProductViewTracker
               productId={product.id}
               productTitle={product.title}
-              variantId={product.variants?.[0]?.id || null}
-              currency={product.variants?.[0]?.calculated_price?.currency_code || 'usd'}
-              value={product.variants?.[0]?.calculated_price?.calculated_amount ?? null}
+              variantId={firstVariantId || null}
+              currency={currency}
+              value={firstVariantPrice}
             />
 
-            {/* Variant Selector + Price + Add to Cart (client component) */}
+            {/* Urgency widgets */}
+            <ProductUrgency stockQty={stockQty} showCountdown={true} />
+
+            {/* Standard variant selector + price (client component) */}
             <ProductActions product={product} variantExtensions={variantExtensions} />
 
-            {/* Trust Signals */}
-            <div className="grid grid-cols-3 gap-4 py-6 border-t">
-              <div className="text-center">
-                <Truck className="h-5 w-5 mx-auto mb-1.5" strokeWidth={1.5} />
-                <p className="text-xs text-muted-foreground">Free Shipping</p>
-              </div>
-              <div className="text-center">
-                <RotateCcw className="h-5 w-5 mx-auto mb-1.5" strokeWidth={1.5} />
-                <p className="text-xs text-muted-foreground">30-Day Returns</p>
-              </div>
-              <div className="text-center">
-                <Shield className="h-5 w-5 mx-auto mb-1.5" strokeWidth={1.5} />
-                <p className="text-xs text-muted-foreground">Secure Checkout</p>
-              </div>
-            </div>
+            {/* ── Bundle Offer ── */}
+            {firstVariantId && firstVariantPrice > 0 && (
+              <ProductBundleOffer
+                mainVariantId={firstVariantId}
+                mainVariantTitle={firstVariantTitle}
+                mainPrice={firstVariantPrice}
+                currency={currency}
+                productTitle={product.title}
+              />
+            )}
 
-            {/* Accordion Sections */}
+            {/* ── Trust Badges ── */}
+            <ProductTrustBadges />
+
+            {/* ── Accordion Sections ── */}
             <ProductAccordion
               description={product.description}
               details={product.metadata as Record<string, string> | undefined}

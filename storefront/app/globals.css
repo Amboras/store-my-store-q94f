@@ -4,35 +4,32 @@
 
 @layer base {
   :root {
-    --background: 40 20% 98%;
-    --foreground: 0 0% 10%;
-    --muted: 40 10% 94%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 35 40% 50%;
-    --accent-foreground: 0 0% 100%;
-    --border: 40 10% 88%;
-    --ring: 35 40% 50%;
-    --primary: 0 0% 10%;
-    --primary-foreground: 0 0% 98%;
+    /* SolarVolt — Deep navy + solar amber + clean white */
+    --background: 210 20% 98%;
+    --foreground: 215 40% 12%;
+    --muted: 210 15% 93%;
+    --muted-foreground: 215 15% 48%;
+    --accent: 38 95% 52%;
+    --accent-foreground: 215 40% 10%;
+    --border: 210 15% 86%;
+    --ring: 38 95% 52%;
+    --primary: 215 55% 18%;
+    --primary-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-
-    /* Brand colors (dynamically injected from Store.metadata.brand) */
-    /* Access in CSS: var(--brand-primary), var(--brand-secondary) */
-    /* Managed by BrandStyleInjector component */
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 40 20% 94%;
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 35 45% 55%;
-    --accent-foreground: 0 0% 100%;
-    --border: 0 0% 16%;
-    --ring: 35 45% 55%;
-    --primary: 40 20% 94%;
-    --primary-foreground: 0 0% 6%;
+    --background: 215 40% 8%;
+    --foreground: 210 20% 94%;
+    --muted: 215 30% 14%;
+    --muted-foreground: 210 15% 55%;
+    --accent: 38 95% 52%;
+    --accent-foreground: 215 40% 10%;
+    --border: 215 25% 20%;
+    --ring: 38 95% 52%;
+    --primary: 210 20% 94%;
+    --primary-foreground: 215 40% 8%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
   }
@@ -72,7 +69,7 @@
     @apply w-full;
   }
 
-  /* Brand color utilities - uses colors from Store.metadata.brand */
+  /* Brand color utilities */
   .btn-brand-primary {
     background-color: var(--brand-primary, hsl(var(--primary)));
     color: white;
@@ -109,7 +106,8 @@ html {
 
 /* Selection color */
 ::selection {
-  @apply bg-accent/20 text-foreground;
+  background-color: hsl(38 95% 52% / 0.25);
+  color: hsl(var(--foreground));
 }
 
 /* Focus styles */
@@ -131,4 +129,13 @@ html {
 
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
+}
+
+/* Pulse glow for urgency elements */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(38 95% 52% / 0.4); }
+  50% { box-shadow: 0 0 0 6px hsl(38 95% 52% / 0); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }

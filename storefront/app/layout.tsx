@@ -30,10 +30,10 @@ const body = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Store — Modern Commerce',
-    template: '%s | Store',
+    default: 'SolarVolt — Solar Panels, Backup Power & Smart Energy',
+    template: '%s | SolarVolt',
   },
-  description: 'Discover curated products crafted with care. A modern ecommerce experience.',
+  description: 'South Africa\'s trusted source for solar panels, battery backup systems, and smart energy-saving devices. Beat load shedding for good.',
 }
 
 export default function RootLayout({
